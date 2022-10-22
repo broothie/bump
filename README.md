@@ -13,12 +13,24 @@ cargo install --git https://github.com/broothie/bump
 ```
 $ cat version.rb
 VERSION = 'v3.2.1'.freeze
+
+# Bump patch version
 $ bump version.rb
 3.2.1 -> 3.2.2
+$ cat version.rb
+VERSION = 'v3.2.2'.freeze
+
+# Bump minor version
 $ bump version.rb -s minor
 3.2.2 -> 3.3.0
+$ cat version.rb
+VERSION = 'v3.3.0'.freeze
+
+# Bump major version
 $ bump version.rb -s major
 3.3.0 -> 4.0.0
+$ cat version.rb
+VERSION = 'v4.0.0'.freeze
 ```
 
 ### Usage Output
