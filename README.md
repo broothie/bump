@@ -10,7 +10,7 @@ cargo install --git https://github.com/broothie/bump
 
 ## Usage
 
-### Usage Example
+### Example
 
 ```console
 $ cat version.rb
@@ -35,9 +35,9 @@ $ cat version.rb
 VERSION = 'v4.0.0'.freeze
 ```
 
-### Usage Output
+### Options
 
-```
+```console
 $ bump -h
 A SemVer version bumper
 
