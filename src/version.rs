@@ -10,14 +10,6 @@ pub struct Version {
 }
 
 impl Version {
-    fn new(major: u16, minor: u16, patch: u16) -> Self {
-        Self {
-            major,
-            minor,
-            patch,
-        }
-    }
-
     pub fn bump(&self, segment: &Segment) -> Self {
         match segment {
             Segment::Patch => Self {
@@ -76,22 +68,30 @@ mod version {
     use super::Version;
     use crate::Segment;
 
+    fn new(major: u16, minor: u16, patch: u16) -> Version {
+        Version {
+            major,
+            minor,
+            patch,
+        }
+    }
+
     #[test]
-    fn to_str() {
-        assert_eq!("1.2.3".parse::<Version>().unwrap(), Version::new(1, 2, 3));
+    fn from_str() {
+        assert_eq!("1.2.3".parse::<Version>().unwrap(), new(1, 2, 3));
     }
 
     #[test]
     fn bump() {
-        let version = Version::new(1, 2, 3);
+        let version = new(1, 2, 3);
 
-        assert_eq!(version.bump(&Segment::Major), Version::new(2, 0, 0));
-        assert_eq!(version.bump(&Segment::Minor), Version::new(1, 3, 0));
-        assert_eq!(version.bump(&Segment::Patch), Version::new(1, 2, 4));
+        assert_eq!(version.bump(&Segment::Major), new(2, 0, 0));
+        assert_eq!(version.bump(&Segment::Minor), new(1, 3, 0));
+        assert_eq!(version.bump(&Segment::Patch), new(1, 2, 4));
     }
 
     #[test]
     fn to_string() {
-        assert_eq!(Version::new(1, 2, 3).to_string(), "1.2.3");
+        assert_eq!(new(1, 2, 3).to_string(), "1.2.3");
     }
 }
