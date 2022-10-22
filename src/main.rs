@@ -65,7 +65,7 @@ fn main() -> Result<()> {
 
         let version_match = match cli.line {
             Some(target_line_number) => {
-                if target_line_number == current_line_index + 1 {
+                if current_line_index + 1 == target_line_number {
                     let version_match = VERSION_REGEX
                         .find_iter(&line_text)
                         .nth(cli.number - 1)
@@ -91,15 +91,13 @@ fn main() -> Result<()> {
         };
 
         if let Some(version_match) = version_match {
-            let version = Version::from_string(version_match.as_str())?;
-            let bumped = version.bump(&cli.segment);
-
-            let mut clone = line_text.clone();
-            clone.replace_range(version_match.range(), &bumped.to_string());
-            line_text = clone;
-
             found = true;
+
+            let version = version_match.as_str().parse::<Version>()?;
+            let bumped = version.bump(&cli.segment);
             println!("{} -> {}", version.to_string(), bumped.to_string());
+
+            line_text.replace_range(version_match.range(), &bumped.to_string());
         }
 
         lines.push(line_text);

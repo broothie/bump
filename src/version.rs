@@ -1,16 +1,58 @@
-use crate::error::Error;
 use crate::Segment;
 use anyhow::Result;
+use std::{num::ParseIntError, str::FromStr};
 
+#[derive(Debug, PartialEq)]
 pub struct Version {
-    patch: u16,
-    minor: u16,
     major: u16,
+    minor: u16,
+    patch: u16,
 }
 
 impl Version {
-    pub fn from_string(string: &str) -> Result<Self> {
-        let segments = string.split(".").collect::<Vec<&str>>();
+    fn new(major: u16, minor: u16, patch: u16) -> Self {
+        Self {
+            major,
+            minor,
+            patch,
+        }
+    }
+
+    pub fn bump(&self, segment: &Segment) -> Self {
+        match segment {
+            Segment::Patch => Self {
+                major: self.major,
+                minor: self.minor,
+                patch: self.patch + 1,
+            },
+            Segment::Minor => Self {
+                major: self.major,
+                minor: self.minor + 1,
+                patch: 0,
+            },
+            Segment::Major => Self {
+                major: self.major + 1,
+                minor: 0,
+                patch: 0,
+            },
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("invalid number of segments: {0}")]
+    InvalidSegmentCount(usize),
+
+    #[error("unable to parse segment")]
+    ParseIntError(#[from] ParseIntError),
+}
+
+impl FromStr for Version {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let segments = s.split(".").collect::<Vec<_>>();
         if segments.len() != 3 {
             return Err(Error::InvalidSegmentCount(segments.len()).into());
         }
@@ -21,30 +63,35 @@ impl Version {
             patch: segments[2].parse()?,
         })
     }
-
-    pub fn bump(&self, segment: &Segment) -> Self {
-        match segment {
-            Segment::Patch => Self {
-                patch: self.patch + 1,
-                minor: self.minor,
-                major: self.major,
-            },
-            Segment::Minor => Self {
-                patch: 0,
-                minor: self.minor + 1,
-                major: self.major,
-            },
-            Segment::Major => Self {
-                patch: 0,
-                minor: 0,
-                major: self.major + 1,
-            },
-        }
-    }
 }
 
 impl ToString for Version {
     fn to_string(&self) -> String {
         format!("{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+
+#[cfg(test)]
+mod version {
+    use super::Version;
+    use crate::Segment;
+
+    #[test]
+    fn to_str() {
+        assert_eq!("1.2.3".parse::<Version>().unwrap(), Version::new(1, 2, 3));
+    }
+
+    #[test]
+    fn bump() {
+        let version = Version::new(1, 2, 3);
+
+        assert_eq!(version.bump(&Segment::Major), Version::new(2, 0, 0));
+        assert_eq!(version.bump(&Segment::Minor), Version::new(1, 3, 0));
+        assert_eq!(version.bump(&Segment::Patch), Version::new(1, 2, 4));
+    }
+
+    #[test]
+    fn to_string() {
+        assert_eq!(Version::new(1, 2, 3).to_string(), "1.2.3");
     }
 }
