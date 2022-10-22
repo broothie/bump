@@ -1,5 +1,7 @@
 # `bump`
 
+A SemVer version bumper
+
 ## Installation
 
 ```shell script
