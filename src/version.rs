@@ -2,7 +2,7 @@ use crate::Segment;
 use anyhow::Result;
 use std::{num::ParseIntError, str::FromStr};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Version {
     major: u16,
     minor: u16,
@@ -10,23 +10,19 @@ pub struct Version {
 }
 
 impl Version {
+    pub fn new(major: u16, minor: u16, patch: u16) -> Version {
+        Version {
+            major,
+            minor,
+            patch,
+        }
+    }
+
     pub fn bump(&self, segment: Segment) -> Self {
         match segment {
-            Segment::Patch => Self {
-                major: self.major,
-                minor: self.minor,
-                patch: self.patch + 1,
-            },
-            Segment::Minor => Self {
-                major: self.major,
-                minor: self.minor + 1,
-                patch: 0,
-            },
-            Segment::Major => Self {
-                major: self.major + 1,
-                minor: 0,
-                patch: 0,
-            },
+            Segment::Patch => Self::new(self.major, self.minor, self.patch + 1),
+            Segment::Minor => Self::new(self.major, self.minor + 1, 0),
+            Segment::Major => Self::new(self.major + 1, 0, 0),
         }
     }
 }
@@ -49,11 +45,11 @@ impl FromStr for Version {
             return Err(Error::InvalidSegmentCount(segments.len()).into());
         }
 
-        Ok(Self {
-            major: segments[0].parse()?,
-            minor: segments[1].parse()?,
-            patch: segments[2].parse()?,
-        })
+        Ok(Self::new(
+            segments[0].parse()?,
+            segments[1].parse()?,
+            segments[2].parse()?,
+        ))
     }
 }
 
@@ -68,30 +64,22 @@ mod version {
     use super::Version;
     use crate::Segment;
 
-    fn new(major: u16, minor: u16, patch: u16) -> Version {
-        Version {
-            major,
-            minor,
-            patch,
-        }
-    }
-
     #[test]
     fn from_str() {
-        assert_eq!("1.2.3".parse::<Version>().unwrap(), new(1, 2, 3));
+        assert_eq!("1.2.3".parse::<Version>().unwrap(), Version::new(1, 2, 3));
     }
 
     #[test]
     fn bump() {
-        let version = new(1, 2, 3);
+        let version = Version::new(1, 2, 3);
 
-        assert_eq!(version.bump(Segment::Major), new(2, 0, 0));
-        assert_eq!(version.bump(Segment::Minor), new(1, 3, 0));
-        assert_eq!(version.bump(Segment::Patch), new(1, 2, 4));
+        assert_eq!(version.bump(Segment::Major), Version::new(2, 0, 0));
+        assert_eq!(version.bump(Segment::Minor), Version::new(1, 3, 0));
+        assert_eq!(version.bump(Segment::Patch), Version::new(1, 2, 4));
     }
 
     #[test]
     fn to_string() {
-        assert_eq!(new(1, 2, 3).to_string(), "1.2.3");
+        assert_eq!(Version::new(1, 2, 3).to_string(), "1.2.3");
     }
 }
