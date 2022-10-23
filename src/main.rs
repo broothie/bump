@@ -1,9 +1,7 @@
-mod error;
 mod version;
 
 use anyhow::Result;
 use clap::{Parser, ValueEnum};
-use error::Error;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::fs;
@@ -18,6 +16,12 @@ pub enum Segment {
     Patch,
     Minor,
     Major,
+}
+
+#[derive(Debug, thiserror::Error)]
+enum Error {
+    #[error("no semver pattern found")]
+    NoSemverFound,
 }
 
 #[derive(Debug, Parser)]
@@ -65,7 +69,7 @@ fn replace(input: &String, segment: Segment, index: u16) -> Result<String> {
     let version_match = VERSION_REGEX
         .find_iter(&input)
         .nth(index.into())
-        .ok_or_else(|| Error::NoSemverFound(input.to_owned()))?;
+        .ok_or_else(|| Error::NoSemverFound)?;
 
     let version = version_match.as_str().parse::<Version>()?;
     let bumped = version.bump(segment);
