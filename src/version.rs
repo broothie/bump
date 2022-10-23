@@ -10,7 +10,7 @@ pub struct Version {
 }
 
 impl Version {
-    pub fn bump(&self, segment: &Segment) -> Self {
+    pub fn bump(&self, segment: Segment) -> Self {
         match segment {
             Segment::Patch => Self {
                 major: self.major,
@@ -85,9 +85,9 @@ mod version {
     fn bump() {
         let version = new(1, 2, 3);
 
-        assert_eq!(version.bump(&Segment::Major), new(2, 0, 0));
-        assert_eq!(version.bump(&Segment::Minor), new(1, 3, 0));
-        assert_eq!(version.bump(&Segment::Patch), new(1, 2, 4));
+        assert_eq!(version.bump(Segment::Major), new(2, 0, 0));
+        assert_eq!(version.bump(Segment::Minor), new(1, 3, 0));
+        assert_eq!(version.bump(Segment::Patch), new(1, 2, 4));
     }
 
     #[test]
