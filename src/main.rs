@@ -84,13 +84,13 @@ fn replace_by_line(
     input: &String,
     segment: Segment,
     index: u16,
-    target_line_index: u16,
+    line_index: u16,
 ) -> Result<String> {
     Ok(input
         .split("\n")
         .enumerate()
         .map(|(current_line_index, line)| {
-            if current_line_index == target_line_index.into() {
+            if current_line_index == line_index.into() {
                 replace(&line.to_string(), segment, index)
             } else {
                 Ok(line.to_string())
